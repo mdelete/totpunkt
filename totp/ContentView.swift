@@ -78,7 +78,9 @@ struct ContentView: View {
                     }
                     .swipeActions {
                         if !isEditing {
-                            Button (action: { UIPasteboard.general.string = item.otpString }) {
+                            Button (action: {
+                                UIPasteboard.general.setItemProviders([NSItemProvider(object: item.otpString as NSString)], localOnly: false, expirationDate: now + TimeInterval(item.period))
+                            }) {
                                 Label("Copy", systemImage: "arrow.up.doc.on.clipboard")
                             }
                             .tint(.blue)
