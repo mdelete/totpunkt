@@ -30,7 +30,6 @@ final class TOTPAccount: Codable, Identifiable, Equatable {
 
     private let totp: TOTP!
     private var lastGeneration: Int64 = 0
-    private var counter: Int!
     private(set) var otpString: String!
    
     private enum CodingKeys: String, CodingKey {
@@ -82,18 +81,16 @@ final class TOTPAccount: Codable, Identifiable, Equatable {
     }
     
     func remainingTime(from date: Date) -> String {
+
         let currentGeneration = Int64(floor(Double(Int64(floor(date.timeIntervalSince1970))) / Double(period)))
+        
+        let currentGenerationRemainder = Int(floor(Double(Int64(floor(date.timeIntervalSince1970))).truncatingRemainder(dividingBy: Double(period))))
+
         if currentGeneration > lastGeneration {
-            counter = period
             otpString = totp.generate(time: date) ?? String(repeating: "-", count: digits)
-            if lastGeneration == 0 {
-                counter -= Int(Int64(floor(date.timeIntervalSince1970)) % Int64(period)) - 1
-                //counter -= Int(floor(Double(Int64(floor(date.timeIntervalSince1970))).truncatingRemainder(dividingBy: Double(period)))) - 1
-            }
             lastGeneration = currentGeneration
-        } else {
-            counter -= 1
         }
-        return String(counter)
+
+        return String((period - currentGenerationRemainder))
     }
 }
