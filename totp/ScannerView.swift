@@ -24,15 +24,13 @@ struct ScannerView: UIViewControllerRepresentable {
             guard let item = allItems.first else { return }
             switch item {
             case .barcode(let recognizedCode):
-                if let s = recognizedCode.payloadStringValue, let a = try? URL(string: s)?.decodeOTP() {
-                    account = a
-                    print(a.description) // FIXME: debug
+                if let str = recognizedCode.payloadStringValue, let acc = try? URL(string: str)?.decodeOTP() {
+                    account = acc
                     dataScanner.dismiss(animated: true)
                 }
             case .text(let recognizedText):
-                if let a = try? URL(string: recognizedText.transcript.trimmingCharacters(in: .whitespacesAndNewlines))?.decodeOTP() {
-                    account = a
-                    print(a.description) // FIXME: debug
+                if let acc = try? URL(string: recognizedText.transcript.removingCharacters(in: .whitespacesAndNewlines))?.decodeOTP() {
+                    account = acc
                     dataScanner.dismiss(animated: true)
                 }
             default:
@@ -46,22 +44,31 @@ struct ScannerView: UIViewControllerRepresentable {
     }
     
     func makeUIViewController(context: Context) -> DataScannerViewController {
+
         let viewController = DataScannerViewController(
             recognizedDataTypes: [.barcode(symbologies: [.qr]), .text()],
             qualityLevel: .fast,
             recognizesMultipleItems: false,
-            isPinchToZoomEnabled: false,
+            isPinchToZoomEnabled: true,
             isGuidanceEnabled: true,
             isHighlightingEnabled: true
         )
+
         viewController.delegate = context.coordinator
-        try? viewController.startScanning()
+
         return viewController
     }
     
     func updateUIViewController(_ uiViewController: DataScannerViewController, context: Context) {
-        //nix
+        try? uiViewController.startScanning()
     }
     
     typealias UIViewControllerType = DataScannerViewController
+}
+
+extension String {
+    func removingCharacters(in ignoredChars: CharacterSet) -> String {
+        let passed = self.unicodeScalars.filter { !ignoredChars.contains($0) }
+        return String(String.UnicodeScalarView(passed))
+    }
 }
