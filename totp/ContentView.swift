@@ -47,6 +47,8 @@ struct ContentView: View {
     let timer = Timer.publish(every: 1, on: .current, in: .common).autoconnect()
     
     @State private var editMode : EditMode = .inactive
+    @State private var isEditing = false
+    
     @State private var filter = ""
     @State private var now = Date()
     @State private var showScanner: Bool = false
@@ -74,6 +76,14 @@ struct ContentView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
+                    .swipeActions {
+                        if !isEditing {
+                            Button (action: { UIPasteboard.general.string = item.otpString }) {
+                                Label("Copy", systemImage: "arrow.up.doc.on.clipboard")
+                            }
+                            .tint(.blue)
+                        }
+                    }
                 }
                 .onMove { indexSet, offset in
                     viewModel.accounts.move(fromOffsets: indexSet, toOffset: offset)
@@ -83,13 +93,24 @@ struct ContentView: View {
                     viewModel.accounts.remove(atOffsets: indexSet)
                     viewModel.save()
                 }
-                //.deleteDisabled(!editMode.isEditing) FIXME: does not work
-                .environment(\.editMode, $editMode)
             }
             .navigationTitle("Totpunkt")
+            .environment(\.editMode, $editMode)
+            .onChange(of: isEditing, { _, isEditing in
+                editMode = isEditing ? .active : .inactive
+            })
+            .animation(.default, value: editMode)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    EditButton()
+                    Button(action: {
+                        isEditing.toggle()
+                    }) {
+                        if isEditing {
+                            Text("Done")
+                        } else {
+                            Text("Edit")
+                        }
+                    }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: {
