@@ -9,27 +9,14 @@ import UIKit
 
 class LaunchScreenAnimator {
 
-    // MARK: - Properties
-
-    static let instance = LaunchScreenAnimator(durationBase: 0.3)
+    static let instance = LaunchScreenAnimator()
 
     var view: UIView?
     var parentView: UIView?
 
-    let durationBase: Double
-
-
-    // MARK: - Lifecycle
-
-    init(durationBase: Double) {
-        self.durationBase = durationBase
-    }
-
     func loadView() -> UIView {
         return UINib(nibName: "LaunchScreen", bundle: nil).instantiate(withOwner: nil, options: nil)[0] as! UIView
     }
-
-    // MARK: - Animation
 
     func animateAfterLaunch(_ parentViewPassedIn: UIView) {
 
@@ -44,8 +31,8 @@ class LaunchScreenAnimator {
         let dot: UIView = view!.viewWithTag(42)!
         
         UIView.animate(
-            withDuration: durationBase * 1.75,
-            delay: durationBase / 1.5,
+            withDuration: 0.2,
+            delay: 0.2,
             options: .curveLinear,
             animations: {
                 var transform = CGAffineTransform.identity
