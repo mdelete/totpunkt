@@ -31,7 +31,7 @@ class LaunchScreenAnimator {
         let dot: UIView = view!.viewWithTag(42)!
         
         UIView.animate(
-            withDuration: 0.2,
+            withDuration: 0.3,
             delay: 0.2,
             options: .curveLinear,
             animations: {
