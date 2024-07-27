@@ -22,8 +22,8 @@ class FileHelper {
         do {
             let data = try Data(contentsOf: accountPlistURL)
             accounts = try jsonDecoder.decode([TOTPAccount].self, from: data)
-        } catch (let err) {
-            print(err.localizedDescription)
+        } catch let error {
+            print(error.localizedDescription) // FIXME: handle in UI
         }
         
         return accounts
@@ -38,8 +38,8 @@ class FileHelper {
         do  {
             let data = try jsonEncoder.encode(accounts)
             try data.write(to: accountPlistURL, options: .atomic)
-        } catch (let err) {
-            print(err.localizedDescription)
+        } catch let error {
+            print(error.localizedDescription) // FIXME: handle in UI
         }
     }
     
