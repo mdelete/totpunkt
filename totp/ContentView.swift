@@ -11,7 +11,7 @@ import Observation
 @Observable
 final class AccountsViewModel {
     
-    var accounts: [TOTPAccount] = []
+    private(set) var accounts: [TOTPAccount] = []
     
     func filter(matching: String) async {
         // FIXME: filter account with search field string
@@ -21,11 +21,20 @@ final class AccountsViewModel {
     func add(_ account: TOTPAccount?) {
         if let account = account, accounts.firstIndex(where: {$0.id == account.id}) == nil {
             accounts.append(account)
-            save()
+            FileHelper.store(accounts: accounts)
         }
     }
     
-    func save() {
+    func move(fromOffsets source: IndexSet, toOffset destination: Int) {
+        self.accounts.move(fromOffsets: source, toOffset: destination)
+        FileHelper.store(accounts: accounts)
+    }
+    
+    func remove(atOffsets indexSet: IndexSet) {
+        indexSet.forEach {
+            self.accounts[$0].deleteSecret()
+        }
+        self.accounts.remove(atOffsets: indexSet)
         FileHelper.store(accounts: accounts)
     }
     
@@ -88,12 +97,10 @@ struct ContentView: View {
                     }
                 }
                 .onMove { indexSet, offset in
-                    viewModel.accounts.move(fromOffsets: indexSet, toOffset: offset)
-                    viewModel.save()
+                    viewModel.move(fromOffsets: indexSet, toOffset: offset)
                 }
                 .onDelete { indexSet in
-                    viewModel.accounts.remove(atOffsets: indexSet)
-                    viewModel.save()
+                    viewModel.remove(atOffsets: indexSet)
                 }
             }
             .navigationTitle("Totpunkt")
@@ -122,9 +129,11 @@ struct ContentView: View {
                     }
                 }
             }
-            .sheet(isPresented: $showScanner, onDismiss: { viewModel.add(account) },
-                   content: { ScannerView(account: $account) }
-            )
+            .sheet(isPresented: $showScanner, onDismiss: {
+                viewModel.add(account)
+            }, content: {
+                ScannerView(account: $account)
+            })
             .onChange(of: filter, { oldValue, newValue in
                 Task {
                     await viewModel.filter(matching: filter)
