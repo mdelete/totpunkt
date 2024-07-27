@@ -30,7 +30,7 @@ extension URL {
         var period = 30
         var name : String!
         var issuer : String!
-        var secret : Data?
+        var secret : Data!
         var algorithm = OTPAlgorithm.sha1
         
         guard self.scheme == "otpauth" else { throw DecodeError.invalidScheme }
@@ -99,7 +99,7 @@ extension URL {
             throw DecodeError.invalidSecret
         }
 
-        return TOTPAccount(name: name, issuer: issuer, digits: digits, period: period, algorithm: algorithm, secret: secret!)
+        return try TOTPAccount(name: name, issuer: issuer, digits: digits, period: period, algorithm: algorithm, secret: secret)
     }
     
 }

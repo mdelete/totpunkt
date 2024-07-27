@@ -22,13 +22,17 @@ final class TOTPAccount: Codable, Identifiable, Equatable {
         "TOTPAccount: \(name), \(issuer), \(algorithm), \(digits), \(period)"
     }
     
+    enum DecoderError: Error {
+        case failedTOTP
+    }
+    
     let name: String
     let issuer: String
     let algorithm: OTPAlgorithm
     let digits: Int
     let period: Int
 
-    private let totp: TOTP!
+    private let totp: TOTP
     private var lastGeneration: Int64 = 0
     private(set) var otpString: String
    
@@ -36,13 +40,14 @@ final class TOTPAccount: Codable, Identifiable, Equatable {
         case name, issuer, algorithm, digits, period
     }
     
-    init(name: String, issuer: String, digits: Int, period: Int, algorithm: OTPAlgorithm, secret: Data) {
+    init(name: String, issuer: String, digits: Int, period: Int, algorithm: OTPAlgorithm, secret: Data) throws {
         self.name = name
         self.issuer = issuer
         self.digits = digits
         self.period = period
         self.algorithm = algorithm
-        self.totp = TOTP(secret: secret, digits: digits, timeInterval: period, algorithm: algorithm)
+        guard let totp = TOTP(secret: secret, digits: digits, timeInterval: period, algorithm: algorithm) else { throw DecoderError.failedTOTP }
+        self.totp = totp
         self.otpString = String(repeating: "-", count: digits)
     }
     
@@ -54,7 +59,8 @@ final class TOTPAccount: Codable, Identifiable, Equatable {
         self.period = try container.decode(Int.self, forKey: .period)
         self.algorithm = try container.decode(OTPAlgorithm.self, forKey: .algorithm)
         let secret = try KeychainHelper.instance.readSecret(service: issuer, account: name)
-        self.totp = TOTP(secret: secret, digits: digits, timeInterval: period, algorithm: algorithm)
+        guard let totp = TOTP(secret: secret, digits: digits, timeInterval: period, algorithm: algorithm) else { throw DecoderError.failedTOTP }
+        self.totp = totp
         self.otpString = String(repeating: "-", count: digits)
     }
 
