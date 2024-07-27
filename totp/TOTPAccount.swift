@@ -53,7 +53,7 @@ final class TOTPAccount: Codable, Identifiable, Equatable {
         self.digits = try container.decode(Int.self, forKey: .digits)
         self.period = try container.decode(Int.self, forKey: .period)
         self.algorithm = try container.decode(OTPAlgorithm.self, forKey: .algorithm)
-        let secret = try KeychainHelper.readSecret(service: issuer, account: name)
+        let secret = try KeychainHelper.instance.readSecret(service: issuer, account: name)
         self.totp = TOTP(secret: secret, digits: digits, timeInterval: period, algorithm: algorithm)
         self.otpString = String(repeating: "-", count: digits)
     }
@@ -65,25 +65,20 @@ final class TOTPAccount: Codable, Identifiable, Equatable {
         try container.encode(digits, forKey: .digits)
         try container.encode(period, forKey: .period)
         try container.encode(algorithm, forKey: .algorithm)
-        do {
-            try KeychainHelper.save(secret: totp.secret, service: issuer, account: name)
-        } catch KeychainHelper.KeychainError.duplicateItem {
-            try KeychainHelper.update(secret: totp.secret, service: issuer, account: name)
-        }
+        try KeychainHelper.instance.add(secret: totp.secret, service: issuer, account: name)
     }
     
     func deleteSecret() {
         do {
-            try KeychainHelper.deleteSecret(service: issuer, account: name)
-        } catch let err {
-            print(err.localizedDescription)
+            try KeychainHelper.instance.deleteSecret(service: issuer, account: name)
+        } catch let error {
+            print(error.localizedDescription)
         }
     }
     
     func remainingTime(from date: Date) -> String {
 
         let currentGeneration = Int64(floor(Double(Int64(floor(date.timeIntervalSince1970))) / Double(period)))
-        
         let currentGenerationRemainder = Int(floor(Double(Int64(floor(date.timeIntervalSince1970))).truncatingRemainder(dividingBy: Double(period))))
 
         if currentGeneration > lastGeneration {

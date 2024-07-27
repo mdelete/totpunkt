@@ -6,103 +6,96 @@
 //
 
 import Foundation
+import LocalAuthentication
 
 class KeychainHelper {
+
+    static let instance = KeychainHelper()
     
-    enum KeychainError: Error {
-        case itemNotFound
-        case duplicateItem
-        case invalidItemFormat
-        case unexpectedStatus(OSStatus)
+    private let context : LAContext
+    
+    init() {
+        context = LAContext()
+        context.touchIDAuthenticationAllowableReuseDuration = 3
+        context.localizedReason = "Access your generators on the keychain"
     }
+    
+    struct KeychainError: Error {
+        var status: OSStatus
 
-    static func deleteSecret(service: String, account: String) throws {
+        var localizedDescription: String {
+            return SecCopyErrorMessageString(status, nil) as String? ?? "Unknown error."
+        }
+    }
+    
+    func deleteSecret(service: String, account: String) throws {
 
-        let query: [String: AnyObject] = [
-            kSecAttrService as String: service as AnyObject,
-            kSecAttrAccount as String: account as AnyObject,
+        let query: [String: Any] = [
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
             kSecClass as String: kSecClassGenericPassword,
-            kSecAttrSynchronizable as String: kCFBooleanTrue
+            //kSecAttrSynchronizable as String: true
         ]
         
         let status = SecItemDelete(query as CFDictionary)
         
         guard status == errSecSuccess else {
-            throw KeychainError.unexpectedStatus(status)
+            throw KeychainError(status: status)
         }
     }
     
-    static func readSecret(service: String, account: String) throws -> Data {
-        
-        let query: [String: AnyObject] = [
-            kSecAttrService as String: service as AnyObject,
-            kSecAttrAccount as String: account as AnyObject,
+    func readSecret(service: String, account: String) throws -> Data {
+
+        let query: [String: Any] = [
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
             kSecClass as String: kSecClassGenericPassword,
-            kSecAttrSynchronizable as String: kCFBooleanTrue,
+            //kSecAttrSynchronizable as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne,
-            kSecReturnData as String: kCFBooleanTrue
+            kSecReturnData as String: true,
+            kSecUseAuthenticationContext as String: context
         ]
         
-        var itemCopy: AnyObject?
+        var itemCopy: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &itemCopy)
         
-        guard status != errSecItemNotFound else {
-            throw KeychainError.itemNotFound
-        }
-        
         guard status == errSecSuccess else {
-            throw KeychainError.unexpectedStatus(status)
+            throw KeychainError(status: status)
         }
         
-        guard let password = itemCopy as? Data else {
-            throw KeychainError.invalidItemFormat
+        guard let secret = itemCopy as? Data else {
+            throw KeychainError(status: errSecInvalidValue)
         }
         
-        return password
+        return secret
     }
     
-    static func update(secret: Data, service: String, account: String) throws {
-
-        let query: [String: AnyObject] = [
-            kSecAttrService as String: service as AnyObject,
-            kSecAttrAccount as String: account as AnyObject,
+    func add(secret: Data, service: String, account: String) throws {
+        
+        let access = SecAccessControlCreateWithFlags(nil, kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly, .userPresence, nil)
+        
+        let query: [String: Any] = [
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
             kSecClass as String: kSecClassGenericPassword,
-            kSecAttrSynchronizable as String: kCFBooleanTrue
+            // FIXME: keychain item with authentication context cannot be in cloud keychain?
+            //kSecAttrSynchronizable as String: true,
+            kSecValueData as String: secret,
+            kSecAttrAccessControl as String: access as Any,
+            kSecUseAuthenticationContext as String: context
         ]
         
-        let attributes: [String: AnyObject] = [
-            kSecValueData as String: secret as AnyObject
-        ]
-
-        let status = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
-        
-        guard status != errSecItemNotFound else {
-            throw KeychainError.itemNotFound
-        }
-        
-        guard status == errSecSuccess else {
-            throw KeychainError.unexpectedStatus(status)
-        }
-    }
-    
-    static func save(secret: Data, service: String, account: String) throws {
-        
-        let query: [String: AnyObject] = [
-            kSecAttrService as String: service as AnyObject,
-            kSecAttrAccount as String: account as AnyObject,
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrSynchronizable as String: kCFBooleanTrue,
-            kSecValueData as String: secret as AnyObject
-        ]
-        
-        let status = SecItemAdd(query as CFDictionary, nil)
+        var status = SecItemAdd(query as CFDictionary, nil)
         
         if status == errSecDuplicateItem {
-            throw KeychainError.duplicateItem
+            // FIXME: handle duplicate items here by silently deleting an re-adding is a bit dirty
+            status = SecItemDelete(query as CFDictionary)
+            print("errSecDuplicateItem: delete: \(status == errSecSuccess) for \(service) - \(account)")
+            status = SecItemAdd(query as CFDictionary, nil)
         }
         
         guard status == errSecSuccess else {
-            throw KeychainError.unexpectedStatus(status)
+            throw KeychainError(status: status)
         }
     }
     
