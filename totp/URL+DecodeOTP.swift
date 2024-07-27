@@ -40,16 +40,20 @@ extension URL {
         if pathComponents.count != 2 {
             throw DecodeError.invalidIssuerName
         }
-
-        if pathComponents[0].count < 2 {
+        
+        issuer = String(pathComponents[0].dropFirst()) // remove leading '/'
+        issuer = issuer.removingPercentEncoding ?? issuer
+        
+        if issuer.count < 1 {
             throw DecodeError.invalidIssuer
         }
-        issuer = String(pathComponents[0].dropFirst()).removingPercentEncoding
         
-        if pathComponents[1].count < 1 {
+        name = pathComponents[1]
+        name = name.removingPercentEncoding ?? name
+        
+        if name.count < 1 {
             throw DecodeError.invalidName
         }
-        name = pathComponents[1].removingPercentEncoding
         
         if let queryItems = URLComponents(url: self, resolvingAgainstBaseURL: false)?.queryItems {
             try queryItems.forEach { item in
