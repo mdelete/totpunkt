@@ -30,7 +30,7 @@ final class TOTPAccount: Codable, Identifiable, Equatable {
 
     private let totp: TOTP!
     private var lastGeneration: Int64 = 0
-    private(set) var otpString: String!
+    private(set) var otpString: String
    
     private enum CodingKeys: String, CodingKey {
         case name, issuer, algorithm, digits, period
