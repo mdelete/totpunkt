@@ -40,7 +40,7 @@ final class TOTPAccount: Codable, Identifiable, Equatable {
         case name, issuer, algorithm, digits, period
     }
     
-    init(name: String, issuer: String, digits: Int, period: Int, algorithm: OTPAlgorithm, secret: Data) throws {
+    init(name: String, issuer: String, digits: Int = 6, period: Int = 30, algorithm: OTPAlgorithm = .sha1, secret: Data) throws {
         self.name = name
         self.issuer = issuer
         self.digits = digits
