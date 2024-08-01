@@ -102,4 +102,41 @@ extension URL {
         return try TOTPAccount(name: name, issuer: issuer, digits: digits, period: period, algorithm: algorithm, secret: secret)
     }
     
+    func decodeOTPMigration() throws -> [TOTPAccount] {
+
+        var accs = [TOTPAccount]()
+        
+        guard self.scheme == "otpauth-migration", self.host == "offline" else { throw DecodeError.invalidScheme }
+        guard let v = URLComponents(url: self, resolvingAgainstBaseURL: false)?.queryItems?.first(where: { $0.name == "data" }) else { throw DecodeError.invalidParams }
+        guard let d = v.value, let data = Data(base64Encoded: d) else { throw DecodeError.invalidParams }
+        
+        let migrationPayload = try OtpMigration(serializedBytes: data) // protobuf decode using generated struct from otpauth-migration.pb.swift
+        try migrationPayload.accounts.forEach {
+            
+            guard $0.type == OtpMigration.OtpType.totp else { throw DecodeError.notSupported }
+            
+            var digits = 0
+            switch($0.digits) {
+            case OtpMigration.Digits.unspecified: fallthrough
+            case OtpMigration.Digits.six: digits = 6
+            case OtpMigration.Digits.eight: digits = 8
+            default: throw DecodeError.invalidDigits
+            }
+                        
+            var algorithm : OTPAlgorithm
+            switch($0.algorithm) {
+            case OtpMigration.Algorithm.unspecified: fallthrough
+            case OtpMigration.Algorithm.sha1: algorithm = OTPAlgorithm.sha1
+            case OtpMigration.Algorithm.sha256: algorithm = OTPAlgorithm.sha256
+            case OtpMigration.Algorithm.sha512: algorithm = OTPAlgorithm.sha512
+            default: throw DecodeError.invalidHash
+            }
+            
+            let acc = try TOTPAccount(name: $0.name, issuer: $0.issuer, digits: digits, algorithm: algorithm, secret: $0.secret)
+            
+            accs.append(acc)
+        }
+        
+        return accs
+    }
 }

@@ -18,10 +18,12 @@ final class AccountsViewModel {
         accounts = FileHelper.load()
     }
     
-    func add(_ account: TOTPAccount?) {
-        if let account = account, accounts.firstIndex(where: {$0.id == account.id}) == nil {
-            accounts.append(account)
-            FileHelper.store(accounts: accounts)
+    func add(_ account: [TOTPAccount]) {
+        account.forEach { acc in
+            if accounts.firstIndex(where: {$0.id == acc.id}) == nil {
+                accounts.append(acc)
+                FileHelper.store(accounts: accounts)
+            }
         }
     }
     
@@ -41,10 +43,10 @@ final class AccountsViewModel {
     fileprivate func mock() -> AccountsViewModel {
         
         let account1 = try! URL(string:"otpauth://totp/The%20Issuer:my%40email.com?secret=ABCDEFGHIJKLMNOP")!.decodeOTP()
-        add(account1)
+        add([account1])
         
         let account2 = try! URL(string:"otpauth://totp/The%20Other%20Issuer:my%40email.com?secret=QRSDEFGHIJKLMNOP&digits=8&period=15")!.decodeOTP()
-        add(account2)
+        add([account2])
         
         return self
     }
@@ -61,7 +63,7 @@ struct ContentView: View {
     @State private var filter = ""
     @State private var now = Date()
     @State private var showScanner: Bool = false
-    @State private var account: TOTPAccount?
+    @State private var importedAccounts = [TOTPAccount]()
     
     var body: some View {
         NavigationView {
@@ -130,9 +132,9 @@ struct ContentView: View {
                 }
             }
             .sheet(isPresented: $showScanner, onDismiss: {
-                viewModel.add(account)
+                viewModel.add(importedAccounts)
             }, content: {
-                ScannerView(account: $account)
+                ScannerView(accounts: $importedAccounts)
             })
             .onChange(of: filter, { oldValue, newValue in
                 Task {

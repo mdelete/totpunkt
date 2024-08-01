@@ -10,27 +10,34 @@ import VisionKit
 
 struct ScannerView: UIViewControllerRepresentable {
 
-    @Binding var account: TOTPAccount?
+    @Binding var accounts: [TOTPAccount]
     
     class Coordinator: NSObject, DataScannerViewControllerDelegate {
         
-        @Binding var account: TOTPAccount?
+        @Binding var accounts: [TOTPAccount]
 
-        init(account: Binding<TOTPAccount?>) {
-            _account = account
+        init(accounts: Binding<[TOTPAccount]>) {
+            _accounts = accounts
         }
         
         func dataScanner(_ dataScanner: DataScannerViewController, didAdd addedItems: [RecognizedItem], allItems: [RecognizedItem]) {
             guard let item = allItems.first else { return }
+            accounts.removeAll()
             switch item {
             case .barcode(let recognizedCode):
-                if let str = recognizedCode.payloadStringValue, let acc = try? URL(string: str)?.decodeOTP() {
-                    account = acc
-                    dataScanner.dismiss(animated: true)
+                if let str = recognizedCode.payloadStringValue {
+                    if let acc = try? URL(string: str)?.decodeOTP() {
+                        accounts.append(acc)
+                        dataScanner.dismiss(animated: true)
+                    }
+                    else if let migratedAccounts = try? URL(string: str)?.decodeOTPMigration() {
+                        accounts = migratedAccounts
+                        dataScanner.dismiss(animated: true)
+                    }
                 }
             case .text(let recognizedText):
-                if let acc = try? URL(string: recognizedText.transcript.removingCharacters(in: .whitespacesAndNewlines))?.decodeOTP() {
-                    account = acc
+                if let account = try? URL(string: recognizedText.transcript.removingCharacters(in: .whitespacesAndNewlines))?.decodeOTP() {
+                    accounts.append(account)
                     dataScanner.dismiss(animated: true)
                 }
             default:
@@ -40,7 +47,7 @@ struct ScannerView: UIViewControllerRepresentable {
     }
     
     func makeCoordinator() -> Coordinator {
-        Coordinator(account: $account)
+        Coordinator(accounts: $accounts)
     }
     
     func makeUIViewController(context: Context) -> DataScannerViewController {

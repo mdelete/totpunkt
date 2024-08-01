@@ -17,6 +17,8 @@
 		944D2C4C2C4D6EB300285D74 /* TOTPAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944D2C4B2C4D6EB300285D74 /* TOTPAccount.swift */; };
 		9481F1182C4EC40F00CC42B5 /* FileHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9481F1172C4EC40F00CC42B5 /* FileHelper.swift */; };
 		9481F11A2C4EC45E00CC42B5 /* URL+DecodeOTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9481F1192C4EC45E00CC42B5 /* URL+DecodeOTP.swift */; };
+		94968FC82C5C367F00F5C084 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = 94968FC72C5C367F00F5C084 /* SwiftProtobuf */; };
+		94968FCD2C5C506D00F5C084 /* otpauth-migration.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94968FCC2C5C506D00F5C084 /* otpauth-migration.pb.swift */; };
 		94AA48A92C4F228D0007A348 /* ScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AA48A82C4F228D0007A348 /* ScannerView.swift */; };
 /* End PBXBuildFile section */
 
@@ -32,6 +34,7 @@
 		9481F1172C4EC40F00CC42B5 /* FileHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileHelper.swift; sourceTree = "<group>"; };
 		9481F1192C4EC45E00CC42B5 /* URL+DecodeOTP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+DecodeOTP.swift"; sourceTree = "<group>"; };
 		9481F11B2C4EC81600CC42B5 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		94968FCC2C5C506D00F5C084 /* otpauth-migration.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "otpauth-migration.pb.swift"; sourceTree = "<group>"; };
 		94AA48A62C4EFD9E0007A348 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		94AA48A82C4F228D0007A348 /* ScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -42,6 +45,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				944D2C462C4D690800285D74 /* SwiftOTP in Frameworks */,
+				94968FC82C5C367F00F5C084 /* SwiftProtobuf in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -52,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				9481F11B2C4EC81600CC42B5 /* README.md */,
+				94968FCB2C5C378300F5C084 /* protobuf */,
 				944D2C352C4D686B00285D74 /* totp */,
 				944D2C342C4D686B00285D74 /* Products */,
 			);
@@ -83,6 +88,14 @@
 			path = totp;
 			sourceTree = "<group>";
 		};
+		94968FCB2C5C378300F5C084 /* protobuf */ = {
+			isa = PBXGroup;
+			children = (
+				94968FCC2C5C506D00F5C084 /* otpauth-migration.pb.swift */,
+			);
+			path = protobuf;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -101,6 +114,7 @@
 			name = totp;
 			packageProductDependencies = (
 				944D2C452C4D690800285D74 /* SwiftOTP */,
+				94968FC72C5C367F00F5C084 /* SwiftProtobuf */,
 			);
 			productName = totp;
 			productReference = 944D2C332C4D686B00285D74 /* totp.app */;
@@ -132,6 +146,7 @@
 			mainGroup = 944D2C2A2C4D686B00285D74;
 			packageReferences = (
 				944D2C442C4D690800285D74 /* XCRemoteSwiftPackageReference "SwiftOTP" */,
+				94968FC62C5C367F00F5C084 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
 			);
 			productRefGroup = 944D2C342C4D686B00285D74 /* Products */;
 			projectDirPath = "";
@@ -167,6 +182,7 @@
 				944D2C4C2C4D6EB300285D74 /* TOTPAccount.swift in Sources */,
 				94AA48A92C4F228D0007A348 /* ScannerView.swift in Sources */,
 				9481F1182C4EC40F00CC42B5 /* FileHelper.swift in Sources */,
+				94968FCD2C5C506D00F5C084 /* otpauth-migration.pb.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -393,6 +409,14 @@
 				minimumVersion = 3.0.2;
 			};
 		};
+		94968FC62C5C367F00F5C084 /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-protobuf.git";
+			requirement = {
+				kind = exactVersion;
+				version = 1.27.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -400,6 +424,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 944D2C442C4D690800285D74 /* XCRemoteSwiftPackageReference "SwiftOTP" */;
 			productName = SwiftOTP;
+		};
+		94968FC72C5C367F00F5C084 /* SwiftProtobuf */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 94968FC62C5C367F00F5C084 /* XCRemoteSwiftPackageReference "swift-protobuf" */;
+			productName = SwiftProtobuf;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
