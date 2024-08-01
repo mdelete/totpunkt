@@ -18,10 +18,10 @@ final class AccountsViewModel {
         accounts = FileHelper.load()
     }
     
-    func add(_ account: [TOTPAccount]) {
-        account.forEach { acc in
-            if accounts.firstIndex(where: {$0.id == acc.id}) == nil {
-                accounts.append(acc)
+    func add(_ addedAccounts: [TOTPAccount]) {
+        addedAccounts.forEach { newAccount in
+            if accounts.firstIndex(where: {$0.id == newAccount.id}) == nil {
+                accounts.append(newAccount)
                 FileHelper.store(accounts: accounts)
             }
         }
