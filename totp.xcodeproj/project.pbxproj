@@ -24,6 +24,7 @@
 
 /* Begin PBXFileReference section */
 		941777E72C501DD400CFE045 /* LaunchScreenAnimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchScreenAnimator.swift; sourceTree = "<group>"; };
+		9433B9532C5D84BD001836EB /* totpRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = totpRelease.entitlements; sourceTree = "<group>"; };
 		9436AB9D2C50065F004D9DE0 /* LaunchScreen.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LaunchScreen.xib; sourceTree = "<group>"; };
 		944D2C332C4D686B00285D74 /* totp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = totp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		944D2C362C4D686B00285D74 /* totpApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = totpApp.swift; sourceTree = "<group>"; };
@@ -73,6 +74,7 @@
 		944D2C352C4D686B00285D74 /* totp */ = {
 			isa = PBXGroup;
 			children = (
+				9433B9532C5D84BD001836EB /* totpRelease.entitlements */,
 				944D2C362C4D686B00285D74 /* totpApp.swift */,
 				944D2C382C4D686B00285D74 /* ContentView.swift */,
 				94AA48A82C4F228D0007A348 /* ScannerView.swift */,
@@ -348,6 +350,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = totp/totpRelease.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
