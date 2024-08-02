@@ -11,11 +11,20 @@ import Observation
 @Observable
 final class AccountsViewModel {
     
-    private(set) var accounts: [TOTPAccount] = []
+    private var accounts: [TOTPAccount] = []
     
-    func filter(matching: String) async {
-        // FIXME: filter account with search field string
+    var searchText: String = ""
+    
+    func reload() async {
         accounts = FileHelper.load()
+    }
+    
+    var filteredAccounts: [TOTPAccount] {
+        guard !searchText.isEmpty else { return accounts }
+        return accounts.filter { account in
+            account.name.localizedCaseInsensitiveContains(searchText) ||
+            account.issuer.localizedCaseInsensitiveContains(searchText)
+        }
     }
     
     func add(_ addedAccounts: [TOTPAccount]) {
@@ -54,13 +63,13 @@ final class AccountsViewModel {
 
 struct ContentView: View {
     
-    let viewModel : AccountsViewModel
+    @Bindable var viewModel : AccountsViewModel
+    
     let timer = Timer.publish(every: 1, on: .current, in: .common).autoconnect()
     
     @State private var editMode : EditMode = .inactive
     @State private var isEditing = false
     
-    @State private var filter = ""
     @State private var now = Date()
     @State private var showScanner: Bool = false
     @State private var importedAccounts = [TOTPAccount]()
@@ -68,7 +77,7 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             List {
-                ForEach(viewModel.accounts) { item in
+                ForEach(viewModel.filteredAccounts) { item in
                     VStack(alignment: .leading) {
                         Text(item.friendlyIssuer)
                             .font(.headline)
@@ -106,6 +115,7 @@ struct ContentView: View {
                 }
             }
             .navigationTitle("Totpunkt")
+            .searchable(text: $viewModel.searchText)
             .environment(\.editMode, $editMode)
             .onChange(of: isEditing, { _, isEditing in
                 editMode = isEditing ? .active : .inactive
@@ -136,15 +146,10 @@ struct ContentView: View {
             }, content: {
                 ScannerView(accounts: $importedAccounts)
             })
-            .onChange(of: filter, { oldValue, newValue in
-                Task {
-                    await viewModel.filter(matching: filter)
-                }
-            })
         }
         .onAppear {
             Task {
-                await viewModel.filter(matching: filter)
+                await viewModel.reload()
             }
         }
     }
