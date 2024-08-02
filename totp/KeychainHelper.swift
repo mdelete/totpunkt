@@ -16,7 +16,6 @@ class KeychainHelper {
     
     init() {
         context = LAContext()
-        context.touchIDAuthenticationAllowableReuseDuration = 3
         context.localizedReason = "Access your generators on the keychain"
     }
     
@@ -26,6 +25,11 @@ class KeychainHelper {
         var localizedDescription: String {
             return SecCopyErrorMessageString(status, nil) as String? ?? "Unknown error."
         }
+    }
+    
+    // FIXME: URGENT - SECURITY - we need to invalidate the context when in background
+    func invalidate() {
+        context.invalidate()
     }
     
     func deleteSecret(service: String, account: String) throws {
