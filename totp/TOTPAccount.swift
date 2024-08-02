@@ -8,6 +8,34 @@
 import Foundation
 import SwiftOTP
 
+func deUglyfyName(_ n: String, _ i: String) -> String {
+    if i == "Microsoft" { // fix microsoft uglyness
+        let components = n.components(separatedBy: "@")
+        if components.count != 2 {
+            return n
+        } else {
+            return components[0].replacingOccurrences(of: "#", with: " ", options: .literal, range: nil)
+        }
+    } else if n.hasPrefix(i + "_") { // fix gitlab uglyness
+        return String(n.dropFirst(i.count + 1))
+    } else {
+        return n
+    }
+}
+
+func deUglyfyIssuer(_ n: String, _ i: String) -> String {
+    if i == "Microsoft" {
+        let components = n.components(separatedBy: "@")
+        if components.count != 2 {
+            return i
+        } else {
+            return components[1]
+        }
+    } else {
+        return i
+    }
+}
+
 final class TOTPAccount: Codable, Identifiable, Equatable {
     
     static func == (lhs: TOTPAccount, rhs: TOTPAccount) -> Bool {
@@ -32,6 +60,9 @@ final class TOTPAccount: Codable, Identifiable, Equatable {
     let digits: Int
     let period: Int
 
+    let friendlyName: String
+    let friendlyIssuer: String
+    
     private let totp: TOTP
     private var lastGeneration: Int64 = 0
     private(set) var otpString: String
@@ -49,6 +80,8 @@ final class TOTPAccount: Codable, Identifiable, Equatable {
         guard let totp = TOTP(secret: secret, digits: digits, timeInterval: period, algorithm: algorithm) else { throw DecoderError.failedTOTP }
         self.totp = totp
         self.otpString = String(repeating: "-", count: digits)
+        self.friendlyName = deUglyfyName(name, issuer)
+        self.friendlyIssuer = deUglyfyIssuer(name, issuer)
     }
     
     init(from decoder: Decoder) throws {
@@ -62,6 +95,8 @@ final class TOTPAccount: Codable, Identifiable, Equatable {
         guard let totp = TOTP(secret: secret, digits: digits, timeInterval: period, algorithm: algorithm) else { throw DecoderError.failedTOTP }
         self.totp = totp
         self.otpString = String(repeating: "-", count: digits)
+        self.friendlyName = deUglyfyName(name, issuer)
+        self.friendlyIssuer = deUglyfyIssuer(name, issuer)
     }
 
     func encode(to encoder: Encoder) throws {

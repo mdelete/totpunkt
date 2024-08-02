@@ -70,9 +70,9 @@ struct ContentView: View {
             List {
                 ForEach(viewModel.accounts) { item in
                     VStack(alignment: .leading) {
-                        Text(item.name)
+                        Text(item.friendlyIssuer)
                             .font(.headline)
-                        Text(item.issuer)
+                        Text(item.friendlyName)
                             .foregroundColor(.secondary)
                         HStack(alignment: .center) {
                             Text(item.remainingTime(from: now))
