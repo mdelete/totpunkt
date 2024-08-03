@@ -82,7 +82,6 @@ class KeychainHelper {
             kSecAttrService as String: service,
             kSecAttrAccount as String: account,
             kSecClass as String: kSecClassGenericPassword,
-            // FIXME: keychain item with authentication context cannot be in cloud keychain?
             //kSecAttrSynchronizable as String: true,
             kSecValueData as String: secret,
             kSecAttrAccessControl as String: access as Any,

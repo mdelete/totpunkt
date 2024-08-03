@@ -4,5 +4,7 @@
 <dict>
 	<key>NSCameraUsageDescription</key>
 	<string>Read config QR codes</string>
+    <key>NSFaceIDUsageDescription</key>
+    <string>Unlock your OTP generators</string>
 </dict>
 </plist>
